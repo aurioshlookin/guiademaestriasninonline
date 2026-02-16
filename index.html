@@ -53,7 +53,7 @@
         import { 
             Scroll, Sword, Heart, Zap, Brain, Wind, Activity, Info, 
             ChevronRight, Menu, X, Users, Flame, Droplet, Mountain, 
-            CloudLightning, Globe, Fan
+            CloudLightning, Globe, Fan, HandMetal
         } from 'lucide-react';
 
         const Guide = () => {
@@ -123,6 +123,7 @@
                         ninjutsu: "Ninjutsu (Int)",
                         bubble: "Bolha (Força)",
                         fan: "Leque (Força)",
+                        gentleFist: "Punho Gentil (Força)",
                         weaponInt: "Caminho de Int",
                         weaponStr: "Caminho de Força"
                     }
@@ -178,6 +179,7 @@
                         ninjutsu: "Ninjutsu (Int)",
                         bubble: "Bubble (Str)",
                         fan: "Fan (Str)",
+                        gentleFist: "Gentle Fist (Str)",
                         weaponInt: "Int Path",
                         weaponStr: "Strength Path"
                     }
@@ -230,6 +232,15 @@
                 { lvl: 25, str: 5, fort: 39, int: 5, agi: 60, chk: 36 },
                 { lvl: 30, str: 5, fort: 64, int: 5, agi: 60, chk: 36 },
                 { lvl: 35, str: 5, fort: 89, int: 5, agi: 60, chk: 36 },
+            ];
+
+            const statsTaijutsuStr = [
+                { lvl: 10, str: 35, fort: 11, int: 5, agi: 5, chk: 14 },
+                { lvl: 15, str: 35, fort: 25, int: 5, agi: 5, chk: 25 },
+                { lvl: 20, str: 40, fort: 34, int: 5, agi: 5, chk: 36 },
+                { lvl: 25, str: 40, fort: 45, int: 5, agi: 5, chk: 50 },
+                { lvl: 30, str: 50, fort: 50, int: 5, agi: 5, chk: 50 },
+                { lvl: 35, str: 60, fort: 75, int: 5, agi: 5, chk: 50 },
             ];
 
             const statsMed = [
@@ -294,6 +305,20 @@
                             "Lvl 23: Can use Seji No Hani (requires 40 Strength).",
                             "Lvl 35: Unlocks Hisui Fans (60 Strength, 20 Agility).",
                             "Important (Lvl 35): To equip Hisui, you must take 20 points from Fortitude in this build and put them into Agility."
+                        ]
+                    },
+                    strTaijutsu: {
+                        'pt-BR': [
+                            "Dano Principal: Pressure Point Needle (desbloqueia no lvl 10).",
+                            "Sem Armas: Essa build não utiliza armas, foca inteiramente em jutsus de Taijutsu.",
+                            "Lvl 35+: A build termina com 60 Força / 75 Fortitude.",
+                            "60 de Força é o mínimo para todos os jutsus da maestria. A partir daqui, invista mais em Força para Dano ou Fortitude para Vida."
+                        ],
+                        en: [
+                            "Main Damage: Pressure Point Needle (unlocked at lvl 10).",
+                            "No Weapons: This build does not use weapons, focusing entirely on Taijutsu jutsus.",
+                            "Lvl 35+: The build ends with 60 Strength / 75 Fortitude.",
+                            "60 Strength is the baseline for all mastery jutsus. From here, invest more in Strength for Damage or Fortitude for Health."
                         ]
                     },
                     agi: {
@@ -390,7 +415,8 @@
                     icon: <Wind className="w-5 h-5" />,
                     color: "green",
                     paths: {
-                        default: { label: content.pathLabels.defaultAgi, stats: statsAgi, notesType: 'agi' }
+                        default: { label: content.pathLabels.defaultAgi, stats: statsAgi, notesType: 'agi' },
+                        gentleFist: { label: content.pathLabels.gentleFist, stats: statsTaijutsuStr, notesType: 'strTaijutsu' }
                     }
                 },
                 medical: {
