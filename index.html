@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia de Maestrias - Nin Online</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM via Import Map for ES Modules -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "lucide-react": "https://esm.sh/lucide-react@0.292.0"
+        }
+    }
+    </script>
+
+    <!-- Babel for JSX compilation in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Custom Styles -->
+    <style>
+        /* Esconder scrollbar mas manter funcionalidade */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Animação de fade */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100">
+    <div id="root"></div>
+
+    <!-- Application Code -->
+    <script type="text/babel" data-type="module">
+        import React, { useState } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { 
+            Scroll, Sword, Heart, Zap, Brain, Wind, Activity, Info, 
+            ChevronRight, Menu, X, Users, Flame, Droplet, Mountain, 
+            CloudLightning, Globe 
+        } from 'lucide-react';
+
+        const Guide = () => {
+            const [activeMastery, setActiveMastery] = useState('fire');
+            const [activeSubPath, setActiveSubPath] = useState('default');
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
+            const [lang, setLang] = useState('en'); // Default to English as requested
+
+            // --- TEXT CONTENT & TRANSLATIONS ---
+            const t = {
+                pt: {
+                    nav: { 
+                        titlePrefix: "Guia de Maestrias - ",
+                        tips: "Dicas", 
+                        start: "O Começo", 
+                        builds: "Builds" 
+                    },
+                    hero: {
+                        title: "Domine sua Maestria",
+                        subtitle: "O guia definitivo para iniciantes em Nin Online. Builds otimizadas do nível 1 ao 35 para todas as maestrias."
+                    },
+                    tips: {
+                        title: "Mecânicas e Dicas Essenciais",
+                        hp: { title: "Vida (HP)", desc: "Você ganha 8 de Vida para cada 1 ponto em Fortitude. Base: 250 HP." },
+                        dmg: { title: "Dano Jutsu", desc: "Você ganha 1 de Dano em Jutsus a cada 2 pontos em Intelecto." },
+                        chk: { title: "Chakra", desc: "Ganhe 5 CP por ponto. A cada 20 CP (4 pts), ganha +1 tick no carregamento." },
+                        evo: { title: "Evolução", desc: "Entre numa guilda com buff (10% status). Priorize anéis de Chakra ou Fortitude." },
+                        daily: "Limite Diário: Só é possível upar um jutsu 10 vezes por dia. Se o jutsu subir de nível (ex: lvl 1 para 2), o limite reseta."
+                    },
+                    lvl5: {
+                        title: "Estratégia Inicial (Nível 1 ao 5)",
+                        desc: "Não distribua seus pontos pensando na maestria final ainda! O objetivo agora é upar rápido.",
+                        where: "Onde Upar?",
+                        mobs: { mist: "Raposas", leaf: "Lobos", sand: "Coiotes" },
+                        dist: "Distribuição de Pontos",
+                        steps: [
+                            "Finalizou o tutorial (Lvl 5)? Coloque 10 em Int (para usar Kunai).",
+                            "Restante em Força até o Lvl 9.",
+                            "Isso garante matar mobs em 2 hits."
+                        ],
+                        reset: "*No nível 10, seus atributos resetam automaticamente."
+                    },
+                    builds: {
+                        title: "Selecione sua Maestria",
+                        table: { lvl: "Nível", str: "For", fort: "Fort", int: "Int", agi: "Agi", chk: "Chk", hp: "Vida", cp: "CP" },
+                        notesTitle: "Notas da Build",
+                        lvl35Title: "Lvl 35+",
+                        lvl35Desc: "A partir daqui, a build é pessoal (mais dano, vida ou chakra). Dúvidas? Consulte o Discord da vila!",
+                        footer: "Atributos entre parênteses indicam bônus de 10% da Guilda."
+                    },
+                    masteryNames: {
+                        fire: "Fogo", water: "Água", earth: "Terra", wind: "Vento", lightning: "Raio",
+                        weapon: "Arma", taijutsu: "Taijutsu", medical: "Médico"
+                    },
+                    pathLabels: {
+                        defaultInt: "Padrão (Int)",
+                        defaultAgi: "Padrão (Agi)",
+                        support: "Suporte",
+                        ninjutsu: "Ninjutsu (Int)",
+                        bubble: "Bolha (Força)",
+                        weaponInt: "Caminho de Int",
+                        weaponStr: "Caminho de Força"
+                    }
+                },
+                en: {
+                    nav: { 
+                        titlePrefix: "Mastery Guide - ",
+                        tips: "Tips", 
+                        start: "The Beginning", 
+                        builds: "Builds" 
+                    },
+                    hero: {
+                        title: "Master Your Mastery",
+                        subtitle: "The definitive guide for Nin Online beginners. Optimized builds from level 1 to 35 for all masteries."
+                    },
+                    tips: {
+                        title: "Mechanics & Essential Tips",
+                        hp: { title: "Health (HP)", desc: "You gain 8 Health for every 1 point in Fortitude. Base: 250 HP." },
+                        dmg: { title: "Jutsu Damage", desc: "You gain 1 Jutsu Damage for every 2 points in Intellect." },
+                        chk: { title: "Chakra", desc: "Gain 5 CP per point. Every 20 CP (4 pts) gives +1 charge tick." },
+                        evo: { title: "Progression", desc: "Join a guild with buff (10% stats). Prioritize Chakra or Fortitude rings." },
+                        daily: "Daily Limit: You can only level up a jutsu 10 times a day. If the jutsu levels up (e.g. lvl 1 to 2), the limit resets."
+                    },
+                    lvl5: {
+                        title: "Initial Strategy (Level 1 to 5)",
+                        desc: "Don't distribute points for your final mastery yet! The goal now is to level up fast.",
+                        where: "Where to Grind?",
+                        mobs: { mist: "Foxes", leaf: "Wolves", sand: "Coyotes" },
+                        dist: "Point Distribution",
+                        steps: [
+                            "Finished tutorial (Lvl 5)? Put 10 in Int (to use Kunai).",
+                            "Rest in Strength until Lvl 9.",
+                            "This ensures 2-hit kills on mobs."
+                        ],
+                        reset: "*At level 10, your stats reset automatically."
+                    },
+                    builds: {
+                        title: "Select Your Mastery",
+                        table: { lvl: "Level", str: "Str", fort: "Fort", int: "Int", agi: "Agi", chk: "Chk", hp: "Health", cp: "CP" },
+                        notesTitle: "Build Notes",
+                        lvl35Title: "Lvl 35+",
+                        lvl35Desc: "From here on, the build is personal preference (more dmg, hp or cp). Doubts? Ask in the village Discord!",
+                        footer: "Stats in parentheses indicate 10% Guild Bonus."
+                    },
+                    masteryNames: {
+                        fire: "Fire", water: "Water", earth: "Earth", wind: "Wind", lightning: "Lightning",
+                        weapon: "Weapon", taijutsu: "Taijutsu", medical: "Medical"
+                    },
+                    pathLabels: {
+                        defaultInt: "Standard (Int)",
+                        defaultAgi: "Standard (Agi)",
+                        support: "Support",
+                        ninjutsu: "Ninjutsu (Int)",
+                        bubble: "Bubble (Str)",
+                        weaponInt: "Int Path",
+                        weaponStr: "Strength Path"
+                    }
+                }
+            };
+
+            const content = t[lang];
+
+            // --- STATS DATA (Universal) ---
+            const statsInt = [
+                { lvl: 10, str: 5, fort: 5, int: 41, agi: 5, chk: 14 },
+                { lvl: 15, str: 5, fort: 11, int: 49, agi: 5, chk: 25 },
+                { lvl: 20, str: 5, fort: 22, int: 56, agi: 5, chk: 32 },
+                { lvl: 25, str: 5, fort: 34, int: 58, agi: 5, chk: 43 },
+                { lvl: 30, str: 5, fort: 34, int: 76, agi: 5, chk: 50 },
+                { lvl: 35, str: 5, fort: 44, int: 91, agi: 5, chk: 50 },
+            ];
+
+            const statsStrWeapon = [
+                { lvl: 10, str: 41, fort: 5, int: 5, agi: 5, chk: 14 },
+                { lvl: 15, str: 49, fort: 11, int: 5, agi: 5, chk: 25 },
+                { lvl: 20, str: 52, fort: 22, int: 5, agi: 5, chk: 36 },
+                { lvl: 25, str: 65, fort: 34, int: 5, agi: 5, chk: 36 },
+                { lvl: 30, str: 70, fort: 54, int: 5, agi: 5, chk: 36 },
+                { lvl: 35, str: 70, fort: 79, int: 5, agi: 5, chk: 36 },
+            ];
+
+            const statsStrBubble = [
+                { lvl: 10, str: 41, fort: 5, int: 5, agi: 5, chk: 14 },
+                { lvl: 15, str: 49, fort: 11, int: 5, agi: 5, chk: 25 },
+                { lvl: 20, str: 52, fort: 22, int: 5, agi: 5, chk: 36 },
+                { lvl: 25, str: 65, fort: 34, int: 5, agi: 5, chk: 36 },
+                { lvl: 30, str: 70, fort: 54, int: 5, agi: 5, chk: 36 },
+                { lvl: 35, str: 80, fort: 69, int: 5, agi: 5, chk: 36 },
+            ];
+
+            const statsAgi = [
+                { lvl: 10, str: 5, fort: 5, int: 5, agi: 41, chk: 14 },
+                { lvl: 15, str: 5, fort: 11, int: 5, agi: 49, chk: 25 },
+                { lvl: 20, str: 5, fort: 22, int: 5, agi: 52, chk: 36 },
+                { lvl: 25, str: 5, fort: 39, int: 5, agi: 60, chk: 36 },
+                { lvl: 30, str: 5, fort: 64, int: 5, agi: 60, chk: 36 },
+                { lvl: 35, str: 5, fort: 89, int: 5, agi: 60, chk: 36 },
+            ];
+
+            const statsMed = [
+                { lvl: 10, str: 5, fort: 14, int: 10, agi: 5, chk: 36 },
+                { lvl: 15, str: 5, fort: 25, int: 10, agi: 5, chk: 50 },
+                { lvl: 20, str: 5, fort: 34, int: 15, agi: 5, chk: 61 },
+                { lvl: 25, str: 5, fort: 34, int: 40, agi: 5, chk: 61 },
+                { lvl: 30, str: 5, fort: 48, int: 40, agi: 5, chk: 72 },
+                { lvl: 35, str: 5, fort: 58, int: 40, agi: 5, chk: 87 },
+            ];
+
+            // --- NOTES (Localized) ---
+            const getNotes = (type) => {
+                const notes = {
+                    int: {
+                        pt: [
+                            "Lvl 25: Você pode começar a usar o Bo Staff. Ele é mais lento que a Kunai, mas causa mais dano.",
+                            "Dica de Combate: Sempre que for ser atacado corpo a corpo, tente se defender (tecla padrão 'Q'). Isso ajuda muito.",
+                            "Sobrevivência: Utilize pílulas de vida e chakra para estar sempre curado durante as lutas."
+                        ],
+                        en: [
+                            "Lvl 25: You can start using the Bo Staff. It's slower than Kunai but deals more damage.",
+                            "Combat Tip: Whenever attacked in melee, try to block (default key 'Q'). This helps a lot.",
+                            "Survival: Use health and chakra pills to stay healed during fights."
+                        ]
+                    },
+                    strWeapon: {
+                        pt: [
+                            "Lvl 10: Utilize a Broad Sword.",
+                            "Lvl 15-20: Recomendo continuar com a Broad Sword até a Twin Blade para economizar ryo.",
+                            "Lvl 28: Libera a Twin Blade (70 Força)."
+                        ],
+                        en: [
+                            "Lvl 10: Use the Broad Sword.",
+                            "Lvl 15-20: I recommend keeping the Broad Sword until Twin Blade to save ryo.",
+                            "Lvl 28: Unlocks Twin Blade (70 Strength)."
+                        ]
+                    },
+                    strBubble: {
+                        pt: [
+                            "Lvl 10: Pegue o Cachimbo (Pipe) Comum (20 Força).",
+                            "Lvl 28: Libera o Cachimbo Enferrujado (50 Força), mas o Comum ainda serve bem.",
+                            "Lvl 35: Invista no Cachimbo de Veneno (80 Força), ele é um dos melhores cachimbos do jogo."
+                        ],
+                        en: [
+                            "Lvl 10: Get the Common Pipe (20 Str).",
+                            "Lvl 28: Unlocks Rusty Pipe (50 Str), but the Common one still works fine.",
+                            "Lvl 35: Invest in the Poison Pipe (80 Str), it's one of the best pipes in the game."
+                        ]
+                    },
+                    agi: {
+                        pt: [
+                            "Lvl 10: Pegue a Wooden Knuckle Blades. Você provavelmente ficará com elas por boa parte do jogo.",
+                            "Lvl 25/30: Existem evoluções (Tonfas/Metal Knuckles), mas essas armas são bem raras e caras.",
+                            "60 Agilidade: É o máximo que você colocará agora, pois é o mínimo que jutsus e armas pedem.",
+                            "Passou do 35: Só aumente Agilidade se a arma pedir, caso contrário, foque em outros atributos."
+                        ],
+                        en: [
+                            "Lvl 10: Get Wooden Knuckle Blades. You'll likely keep them for most of the game.",
+                            "Lvl 25/30: There are upgrades (Tonfas/Metal Knuckles), but they are rare and expensive.",
+                            "60 Agility: This is your cap for now, as it's the minimum requirement for jutsus and weapons.",
+                            "Past 35: Only increase Agility if your weapon requires it, otherwise focus on other stats."
+                        ]
+                    },
+                    med: {
+                        pt: [
+                            "Dano Principal: Chakra Scalpel (Lvl 15).",
+                            "Opções: Você pode tentar investir no Caminho de Intelecto, mas a build de Chakra é superior para upar.",
+                            "Caminho de Intelecto: Pegue apenas Poison Senbon e Poison Cloud.",
+                            "Poison Scalpel: É bom, mas compartilha CD com Chakra Scalpel. Melhor deixar para builds híbridas lvl 50+.",
+                            "Lvl 30: Desbloqueia o jutsu de Auto Cura, que lhe ajudará muito.",
+                            "Lvl 50: Geralmente se reseta a build para ajustar voltada para Int, Agi ou Força."
+                        ],
+                        en: [
+                            "Main Damage: Chakra Scalpel (Lvl 15).",
+                            "Options: You can try the Intellect Path, but the Chakra build is superior for leveling.",
+                            "Intellect Path: Get only Poison Senbon and Poison Cloud.",
+                            "Poison Scalpel: It's good but shares CD with Chakra Scalpel. Better left for hybrid builds lvl 50+.",
+                            "Lvl 30: Unlocks Self-Heal jutsu, which helps immensely.",
+                            "Lvl 50: Usually people reset stats to adjust for Int, Agi or hybrid Strength builds."
+                        ]
+                    }
+                };
+                return notes[type][lang];
+            };
+
+            // --- MASTERY CONFIG ---
+            const masteries = {
+                fire: {
+                    name: content.masteryNames.fire,
+                    icon: <Flame className="w-5 h-5" />,
+                    color: "red",
+                    paths: {
+                        default: { label: content.pathLabels.defaultInt, stats: statsInt, notesType: 'int' }
+                    }
+                },
+                water: {
+                    name: content.masteryNames.water,
+                    icon: <Droplet className="w-5 h-5" />,
+                    color: "blue",
+                    paths: {
+                        default: { label: content.pathLabels.ninjutsu, stats: statsInt, notesType: 'int' },
+                        bubble: { label: content.pathLabels.bubble, stats: statsStrBubble, notesType: 'strBubble' }
+                    }
+                },
+                earth: {
+                    name: content.masteryNames.earth,
+                    icon: <Mountain className="w-5 h-5" />,
+                    color: "amber", 
+                    paths: {
+                        default: { label: content.pathLabels.defaultInt, stats: statsInt, notesType: 'int' }
+                    }
+                },
+                wind: {
+                    name: content.masteryNames.wind,
+                    icon: <Wind className="w-5 h-5" />,
+                    color: "emerald",
+                    paths: {
+                        default: { label: content.pathLabels.defaultInt, stats: statsInt, notesType: 'int' }
+                    }
+                },
+                lightning: {
+                    name: content.masteryNames.lightning,
+                    icon: <CloudLightning className="w-5 h-5" />,
+                    color: "yellow",
+                    paths: {
+                        default: { label: content.pathLabels.defaultInt, stats: statsInt, notesType: 'int' }
+                    }
+                },
+                weapon: {
+                    name: content.masteryNames.weapon,
+                    icon: <Sword className="w-5 h-5" />,
+                    color: "slate",
+                    paths: {
+                        default: { label: content.pathLabels.weaponInt, stats: statsInt, notesType: 'int' },
+                        strength: { label: content.pathLabels.weaponStr, stats: statsStrWeapon, notesType: 'strWeapon' }
+                    }
+                },
+                taijutsu: {
+                    name: content.masteryNames.taijutsu,
+                    icon: <Wind className="w-5 h-5" />,
+                    color: "green",
+                    paths: {
+                        default: { label: content.pathLabels.defaultAgi, stats: statsAgi, notesType: 'agi' }
+                    }
+                },
+                medical: {
+                    name: content.masteryNames.medical,
+                    icon: <Activity className="w-5 h-5" />,
+                    color: "purple",
+                    paths: {
+                        default: { label: content.pathLabels.support, stats: statsMed, notesType: 'med' }
+                    }
+                }
+            };
+
+            const currentMastery = masteries[activeMastery];
+            const currentPathKey = currentMastery.paths[activeSubPath] ? activeSubPath : 'default';
+            const currentPath = currentMastery.paths[currentPathKey];
+
+            // Helper functions
+            const getBuffedStat = (base) => {
+                const buff = Math.floor(base * 0.1);
+                return { base, buff, total: base + buff };
+            };
+
+            const calculateHP = (totalFort) => 210 + (totalFort * 8);
+            const calculateCP = (totalChk) => 25 + (totalChk * 5);
+
+            const renderStatCell = (value, colorClass) => {
+                const { base, buff } = getBuffedStat(value);
+                return (
+                    <td className={`p-3 font-mono ${colorClass}`}>
+                        <span className="font-bold">{base}</span>
+                        <span className="text-xs ml-1 opacity-70">(+{buff})</span>
+                    </td>
+                );
+            };
+
+            const renderStatRow = (stat, index) => {
+                const fortTotal = getBuffedStat(stat.fort).total;
+                const chkTotal = getBuffedStat(stat.chk).total;
+                
+                return (
+                    <tr key={index} className="border-b border-slate-700 hover:bg-slate-700/50 transition-colors">
+                        <td className="p-3 font-bold text-slate-200">Lvl {stat.lvl}</td>
+                        {renderStatCell(stat.str, "text-red-300")}
+                        {renderStatCell(stat.fort, "text-yellow-300")}
+                        {renderStatCell(stat.int, "text-blue-300")}
+                        {renderStatCell(stat.agi, "text-green-300")}
+                        {renderStatCell(stat.chk, "text-purple-300")}
+                        <td className="p-3 font-mono font-bold text-white bg-white/5 border-l border-slate-700">
+                            {calculateHP(fortTotal)}
+                        </td>
+                        <td className="p-3 font-mono font-bold text-blue-200 bg-blue-900/10">
+                            {calculateCP(chkTotal)}
+                        </td>
+                    </tr>
+                );
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-900 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white">
+                    {/* Navbar */}
+                    <nav className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
+                        <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <Scroll className="w-8 h-8 text-indigo-500" />
+                                <span className="text-xl font-bold tracking-tight">
+                                    {content.nav.titlePrefix}<span className="text-indigo-500">Nin Online</span>
+                                </span>
+                            </div>
+                            
+                            <div className="flex items-center gap-6">
+                                <div className="hidden md:flex gap-6 text-sm font-medium text-slate-400">
+                                    <a href="#dicas" className="hover:text-indigo-400 transition-colors">{content.nav.tips}</a>
+                                    <a href="#lvl5" className="hover:text-indigo-400 transition-colors">{content.nav.start}</a>
+                                    <a href="#builds" className="hover:text-indigo-400 transition-colors">{content.nav.builds}</a>
+                                </div>
+
+                                {/* Language Toggle */}
+                                <button 
+                                    onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')}
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 hover:border-indigo-500 text-xs font-bold transition-all text-slate-300"
+                                >
+                                    <Globe className="w-3 h-3" />
+                                    {lang === 'pt' ? 'EN' : 'PT'}
+                                </button>
+
+                                <button className="md:hidden text-slate-300" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                                    {isMenuOpen ? <X /> : <Menu />}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Mobile Menu */}
+                        {isMenuOpen && (
+                            <div className="md:hidden bg-slate-800 border-b border-slate-700 p-4 space-y-3">
+                                <a href="#dicas" onClick={() => setIsMenuOpen(false)} className="block text-slate-300">{content.nav.tips}</a>
+                                <a href="#lvl5" onClick={() => setIsMenuOpen(false)} className="block text-slate-300">{content.nav.start}</a>
+                                <a href="#builds" onClick={() => setIsMenuOpen(false)} className="block text-slate-300">{content.nav.builds}</a>
+                            </div>
+                        )}
+                    </nav>
+
+                    <main className="max-w-7xl mx-auto px-4 py-8 space-y-12">
+
+                        {/* Hero */}
+                        <header className="py-10 text-center">
+                            <h1 className="text-4xl md:text-5xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">
+                                {content.hero.title}
+                            </h1>
+                            <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
+                                {content.hero.subtitle}
+                            </p>
+                        </header>
+
+                        {/* Dicas Gerais */}
+                        <section id="dicas" className="space-y-6">
+                            <div className="flex items-center gap-3 mb-6">
+                                <Info className="w-6 h-6 text-indigo-500" />
+                                <h2 className="text-2xl font-bold">{content.tips.title}</h2>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 hover:border-indigo-500 transition-colors">
+                                    <Heart className="w-8 h-8 text-red-500 mb-3" />
+                                    <h3 className="font-bold mb-2">{content.tips.hp.title}</h3>
+                                    <p className="text-sm text-slate-400">{content.tips.hp.desc}</p>
+                                </div>
+                                <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 hover:border-indigo-500 transition-colors">
+                                    <Brain className="w-8 h-8 text-blue-500 mb-3" />
+                                    <h3 className="font-bold mb-2">{content.tips.dmg.title}</h3>
+                                    <p className="text-sm text-slate-400">{content.tips.dmg.desc}</p>
+                                </div>
+                                <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 hover:border-indigo-500 transition-colors">
+                                    <Zap className="w-8 h-8 text-yellow-500 mb-3" />
+                                    <h3 className="font-bold mb-2">{content.tips.chk.title}</h3>
+                                    <p className="text-sm text-slate-400">{content.tips.chk.desc}</p>
+                                </div>
+                                <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 hover:border-indigo-500 transition-colors">
+                                    <Activity className="w-8 h-8 text-green-500 mb-3" />
+                                    <h3 className="font-bold mb-2">{content.tips.evo.title}</h3>
+                                    <p className="text-sm text-slate-400">{content.tips.evo.desc}</p>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-indigo-900/20 border border-indigo-500/30 p-4 rounded-lg flex gap-3 text-sm text-indigo-200">
+                                <Info className="w-5 h-5 flex-shrink-0" />
+                                <p>{content.tips.daily}</p>
+                            </div>
+                        </section>
+
+                        {/* Level 5 - Strategy */}
+                        <section id="lvl5" className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-900/40 to-slate-800 border border-orange-700/30 shadow-lg">
+                            <div className="p-6 md:p-8 relative z-10">
+                                <h2 className="text-2xl font-bold text-orange-400 mb-4 flex items-center gap-2">
+                                    <ChevronRight className="w-6 h-6" />
+                                    {content.lvl5.title}
+                                </h2>
+                                <div className="space-y-4 text-slate-300">
+                                    <p>{content.lvl5.desc}</p>
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <div className="bg-slate-900/60 p-4 rounded-lg">
+                                            <h3 className="text-white font-bold mb-2">{content.lvl5.where}</h3>
+                                            <ul className="list-disc list-inside space-y-1 text-sm">
+                                                <li>Vila da Névoa (Mist): <span className="text-orange-300">{content.lvl5.mobs.mist}</span></li>
+                                                <li>Vila da Folha (Leaf): <span className="text-orange-300">{content.lvl5.mobs.leaf}</span></li>
+                                                <li>Vila da Areia (Sand): <span className="text-orange-300">{content.lvl5.mobs.sand}</span></li>
+                                            </ul>
+                                        </div>
+                                        <div className="bg-slate-900/60 p-4 rounded-lg">
+                                            <h3 className="text-white font-bold mb-2">{content.lvl5.dist}</h3>
+                                            <ul className="list-disc list-inside space-y-1 text-sm">
+                                                {content.lvl5.steps.map((step, i) => <li key={i}>{step}</li>)}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-slate-400 mt-2">{content.lvl5.reset}</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Builds Section */}
+                        <section id="builds">
+                            <h2 className="text-3xl font-bold mb-6 text-center">{content.builds.title}</h2>
+                            
+                            {/* Mastery Selector - Added pt-4 to prevent top cut-off */}
+                            <div className="flex overflow-x-auto p-4 gap-2 mb-6 scrollbar-hide snap-x md:justify-center md:flex-wrap">
+                                {Object.entries(masteries).map(([key, mastery]) => {
+                                    const isActive = activeMastery === key;
+                                    return (
+                                        <button
+                                            key={key}
+                                            onClick={() => { setActiveMastery(key); setActiveSubPath('default'); }}
+                                            className={`flex flex-col items-center justify-center min-w-[5rem] p-3 rounded-xl border transition-all snap-center
+                                                ${isActive 
+                                                    ? `bg-${mastery.color}-600/20 border-${mastery.color}-500 text-white shadow-[0_0_15px_rgba(0,0,0,0.5)] scale-105` 
+                                                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700 hover:border-slate-600'
+                                                }`}
+                                        >
+                                            <div className={`mb-2 ${isActive ? `text-${mastery.color}-400` : ''}`}>
+                                                {mastery.icon}
+                                            </div>
+                                            <span className="text-xs font-bold uppercase tracking-wide">{mastery.name}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Sub-Path Selector */}
+                            {Object.keys(currentMastery.paths).length > 1 && (
+                                <div className="flex justify-center gap-4 mb-6 animate-fade-in">
+                                    {Object.entries(currentMastery.paths).map(([key, path]) => (
+                                        <button
+                                            key={key}
+                                            onClick={() => setActiveSubPath(key)}
+                                            className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+                                                (activeSubPath === key || (activeSubPath === 'default' && key === 'default'))
+                                                    ? `bg-${currentMastery.color}-500 text-white`
+                                                    : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                                            }`}
+                                        >
+                                            {path.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Content */}
+                            <div className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-2xl animate-fade-in">
+                                <div className={`p-4 border-b border-slate-700 flex items-center gap-3 bg-${currentMastery.color}-900/20`}>
+                                    <div className={`p-2 rounded-lg bg-${currentMastery.color}-500/20 text-${currentMastery.color}-400`}>
+                                        {currentMastery.icon}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-white">{currentMastery.name}</h3>
+                                        <p className="text-sm text-slate-400">{currentPath.label}</p>
+                                    </div>
+                                </div>
+
+                                <div className="grid lg:grid-cols-3 gap-0">
+                                    {/* Table */}
+                                    <div className="lg:col-span-2 overflow-x-auto">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead>
+                                                <tr className="bg-slate-900/50 text-slate-400 text-sm uppercase tracking-wider">
+                                                    <th className="p-3">{content.builds.table.lvl}</th>
+                                                    <th className="p-3 text-red-400" title="Strength">{content.builds.table.str}</th>
+                                                    <th className="p-3 text-yellow-400" title="Fortitude">{content.builds.table.fort}</th>
+                                                    <th className="p-3 text-blue-400" title="Intellect">{content.builds.table.int}</th>
+                                                    <th className="p-3 text-green-400" title="Agility">{content.builds.table.agi}</th>
+                                                    <th className="p-3 text-purple-400" title="Chakra">{content.builds.table.chk}</th>
+                                                    <th className="p-3 text-white border-l border-slate-700">{content.builds.table.hp}</th>
+                                                    <th className="p-3 text-blue-200">{content.builds.table.cp}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-700">
+                                                {currentPath.stats.map((stat, idx) => renderStatRow(stat, idx))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {/* Notes Sidebar */}
+                                    <div className="bg-slate-900/30 p-6 border-l border-slate-700 flex flex-col justify-between">
+                                        <div>
+                                            <h4 className="font-bold text-lg mb-4 flex items-center gap-2">
+                                                <Scroll className="w-5 h-5 text-slate-400" />
+                                                {content.builds.notesTitle}
+                                            </h4>
+                                            <ul className="space-y-4 mb-8">
+                                                {getNotes(currentPath.notesType).map((note, idx) => (
+                                                    <li key={idx} className="flex gap-3 text-sm text-slate-300 leading-relaxed">
+                                                        <span className={`w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-${currentMastery.color}-500`}></span>
+                                                        {note}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+
+                                        <div className="mt-6 p-4 bg-yellow-900/10 border border-yellow-700/30 rounded-lg">
+                                            <div className="flex items-center gap-2 mb-2 text-yellow-500 font-bold text-sm">
+                                                <Users className="w-4 h-4" />
+                                                <span>{content.builds.lvl35Title}</span>
+                                            </div>
+                                            <p className="text-xs text-slate-400 leading-relaxed">
+                                                {content.builds.lvl35Desc}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                    </main>
+                    
+                    <footer className="bg-slate-900 border-t border-slate-800 py-6 text-center">
+                        <p className="text-slate-500 text-sm">{content.builds.footer}</p>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<Guide />);
+    </script>
+</body>
+</html>
