@@ -48,23 +48,31 @@
 
     <!-- Application Code -->
     <script type="text/babel" data-type="module">
-        import React, { useState } from 'react';
+        import React, { useState, useEffect } from 'react';
         import { createRoot } from 'react-dom/client';
         import { 
             Scroll, Sword, Heart, Zap, Brain, Wind, Activity, Info, 
             ChevronRight, Menu, X, Users, Flame, Droplet, Mountain, 
-            CloudLightning, Globe 
+            CloudLightning, Globe, Fan
         } from 'lucide-react';
 
         const Guide = () => {
             const [activeMastery, setActiveMastery] = useState('fire');
             const [activeSubPath, setActiveSubPath] = useState('default');
             const [isMenuOpen, setIsMenuOpen] = useState(false);
-            const [lang, setLang] = useState('en'); // Default to English as requested
+            
+            // Language Detection State
+            const [lang, setLang] = useState(() => {
+                if (typeof navigator !== 'undefined') {
+                    const l = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+                    return (l === 'pt' || l === 'pt-br') ? 'pt-BR' : 'en';
+                }
+                return 'en';
+            });
 
             // --- TEXT CONTENT & TRANSLATIONS ---
             const t = {
-                pt: {
+                'pt-BR': {
                     nav: { 
                         titlePrefix: "Guia de Maestrias - ",
                         tips: "Dicas", 
@@ -114,6 +122,7 @@
                         support: "Suporte",
                         ninjutsu: "Ninjutsu (Int)",
                         bubble: "Bolha (Força)",
+                        fan: "Leque (Força)",
                         weaponInt: "Caminho de Int",
                         weaponStr: "Caminho de Força"
                     }
@@ -168,6 +177,7 @@
                         support: "Support",
                         ninjutsu: "Ninjutsu (Int)",
                         bubble: "Bubble (Str)",
+                        fan: "Fan (Str)",
                         weaponInt: "Int Path",
                         weaponStr: "Strength Path"
                     }
@@ -176,7 +186,7 @@
 
             const content = t[lang];
 
-            // --- STATS DATA (Universal) ---
+            // --- STATS DATA ---
             const statsInt = [
                 { lvl: 10, str: 5, fort: 5, int: 41, agi: 5, chk: 14 },
                 { lvl: 15, str: 5, fort: 11, int: 49, agi: 5, chk: 25 },
@@ -204,6 +214,15 @@
                 { lvl: 35, str: 80, fort: 69, int: 5, agi: 5, chk: 36 },
             ];
 
+            const statsFanWind = [
+                { lvl: 10, str: 30, fort: 5, int: 5, agi: 5, chk: 25 },
+                { lvl: 15, str: 30, fort: 10, int: 25, agi: 5, chk: 25 },
+                { lvl: 20, str: 35, fort: 23, int: 25, agi: 5, chk: 32 },
+                { lvl: 25, str: 40, fort: 32, int: 25, agi: 5, chk: 43 },
+                { lvl: 30, str: 50, fort: 32, int: 25, agi: 5, chk: 58 },
+                { lvl: 35, str: 60, fort: 44, int: 25, agi: 5, chk: 61 },
+            ];
+
             const statsAgi = [
                 { lvl: 10, str: 5, fort: 5, int: 5, agi: 41, chk: 14 },
                 { lvl: 15, str: 5, fort: 11, int: 5, agi: 49, chk: 25 },
@@ -226,7 +245,7 @@
             const getNotes = (type) => {
                 const notes = {
                     int: {
-                        pt: [
+                        'pt-BR': [
                             "Lvl 25: Você pode começar a usar o Bo Staff. Ele é mais lento que a Kunai, mas causa mais dano.",
                             "Dica de Combate: Sempre que for ser atacado corpo a corpo, tente se defender (tecla padrão 'Q'). Isso ajuda muito.",
                             "Sobrevivência: Utilize pílulas de vida e chakra para estar sempre curado durante as lutas."
@@ -238,7 +257,7 @@
                         ]
                     },
                     strWeapon: {
-                        pt: [
+                        'pt-BR': [
                             "Lvl 10: Utilize a Broad Sword.",
                             "Lvl 15-20: Recomendo continuar com a Broad Sword até a Twin Blade para economizar ryo.",
                             "Lvl 28: Libera a Twin Blade (70 Força)."
@@ -250,7 +269,7 @@
                         ]
                     },
                     strBubble: {
-                        pt: [
+                        'pt-BR': [
                             "Lvl 10: Pegue o Cachimbo (Pipe) Comum (20 Força).",
                             "Lvl 28: Libera o Cachimbo Enferrujado (50 Força), mas o Comum ainda serve bem.",
                             "Lvl 35: Invista no Cachimbo de Veneno (80 Força), ele é um dos melhores cachimbos do jogo."
@@ -261,8 +280,24 @@
                             "Lvl 35: Invest in the Poison Pipe (80 Str), it's one of the best pipes in the game."
                         ]
                     },
+                    strFan: {
+                        'pt-BR': [
+                            "Lvl 10: Começa com o Giant Folding Fan.",
+                            "Lvl 15: Upa Intelecto apenas para pegar o jutsu Wind Scythe que vai ajudar a farmar e upar.",
+                            "Lvl 23: Pode usar o Seji No Hani (precisa de 40 de força).",
+                            "Lvl 35: Libera o Hisui Fans (60 Força, 20 Agilidade).",
+                            "Importante (Lvl 35): Para equipar o Hisui, você deve tirar 20 pontos de Fortitude desta build e colocar em Agilidade."
+                        ],
+                        en: [
+                            "Lvl 10: Start with the Giant Folding Fan.",
+                            "Lvl 15: Level Intellect just to get Wind Scythe jutsu to help with farming/leveling.",
+                            "Lvl 23: Can use Seji No Hani (requires 40 Strength).",
+                            "Lvl 35: Unlocks Hisui Fans (60 Strength, 20 Agility).",
+                            "Important (Lvl 35): To equip Hisui, you must take 20 points from Fortitude in this build and put them into Agility."
+                        ]
+                    },
                     agi: {
-                        pt: [
+                        'pt-BR': [
                             "Lvl 10: Pegue a Wooden Knuckle Blades. Você provavelmente ficará com elas por boa parte do jogo.",
                             "Lvl 25/30: Existem evoluções (Tonfas/Metal Knuckles), mas essas armas são bem raras e caras.",
                             "60 Agilidade: É o máximo que você colocará agora, pois é o mínimo que jutsus e armas pedem.",
@@ -276,7 +311,7 @@
                         ]
                     },
                     med: {
-                        pt: [
+                        'pt-BR': [
                             "Dano Principal: Chakra Scalpel (Lvl 15).",
                             "Opções: Você pode tentar investir no Caminho de Intelecto, mas a build de Chakra é superior para upar.",
                             "Caminho de Intelecto: Pegue apenas Poison Senbon e Poison Cloud.",
@@ -329,7 +364,8 @@
                     icon: <Wind className="w-5 h-5" />,
                     color: "emerald",
                     paths: {
-                        default: { label: content.pathLabels.defaultInt, stats: statsInt, notesType: 'int' }
+                        default: { label: content.pathLabels.defaultInt, stats: statsInt, notesType: 'int' },
+                        fan: { label: content.pathLabels.fan, stats: statsFanWind, notesType: 'strFan' }
                     }
                 },
                 lightning: {
@@ -433,11 +469,11 @@
 
                                 {/* Language Toggle */}
                                 <button 
-                                    onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')}
+                                    onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')}
                                     className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 hover:border-indigo-500 text-xs font-bold transition-all text-slate-300"
                                 >
                                     <Globe className="w-3 h-3" />
-                                    {lang === 'pt' ? 'EN' : 'PT'}
+                                    {lang === 'pt-BR' ? 'EN' : 'PT'}
                                 </button>
 
                                 <button className="md:hidden text-slate-300" onClick={() => setIsMenuOpen(!isMenuOpen)}>
